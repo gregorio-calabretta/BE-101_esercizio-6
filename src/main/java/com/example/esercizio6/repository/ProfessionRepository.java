@@ -17,5 +17,4 @@ public interface ProfessionRepository extends JpaRepository<Profession,Integer> 
     Profession findByName(String profession);
     Optional<Profession> findById(Integer id);
 
-
 }

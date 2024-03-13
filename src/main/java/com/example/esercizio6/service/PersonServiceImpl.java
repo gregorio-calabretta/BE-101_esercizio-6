@@ -1,5 +1,8 @@
 package com.example.esercizio6.service;
 
+import com.example.esercizio6.exception.ApiExceptionHandler;
+import com.example.esercizio6.exception.InvalidInputException;
+import com.example.esercizio6.exception.ResourceNotFoundException;
 import com.example.esercizio6.mapper.PersonMapper;
 import com.example.esercizio6.dto.PersonDtoRequest;
 import com.example.esercizio6.dto.PersonDtoResponse;
@@ -7,10 +10,13 @@ import com.example.esercizio6.model.Profession;
 import com.example.esercizio6.repository.PersonRepository;
 import com.example.esercizio6.model.Person;
 import com.example.esercizio6.repository.ProfessionRepository;
-import com.example.esercizio6.validator.Validate;
+import com.example.esercizio6.validation.Validate;
+import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -18,21 +24,19 @@ public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
     private final ProfessionRepository professionRepository;
     private final PersonMapper personMapper;
-    private final Validate validate;
 
     public PersonServiceImpl(PersonRepository personRepository,
                              ProfessionRepository professionRepository,
-                             PersonMapper personMapper, Validate validate) {
+                             PersonMapper personMapper ) {
         this.personRepository = personRepository;
         this.professionRepository = professionRepository;
         this.personMapper= personMapper;
-        this.validate = validate;
     }
 
     public PersonDtoResponse createPerson(PersonDtoRequest personDtoRequest) throws Exception {
         Profession profession = professionRepository.findByName(personDtoRequest.getProfession());
         if (profession == null) {
-            throw new Exception("Profession not found.");
+            throw new ResourceNotFoundException("Profession not found.");
         }
         Person person = Person.builder()
                 .name(personDtoRequest.getName())
@@ -56,9 +60,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     public List<String> findByNameStartingWith(String startingLetter) {
-        validate.isLetter(startingLetter);
-        List<String> nameList = personRepository.findByNameStartingWith(startingLetter);
-        if (nameList.isEmpty()) throw new IllegalArgumentException("Resource not found");
-        return nameList;
+        return personRepository.findByNameStartingWith(startingLetter);
+       }
+
     }
-}
+

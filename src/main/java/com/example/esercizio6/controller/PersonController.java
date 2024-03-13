@@ -1,15 +1,21 @@
 package com.example.esercizio6.controller;
 
+import com.example.esercizio6.annotations.IsLetter;
 import com.example.esercizio6.dto.PersonDtoRequest;
 import com.example.esercizio6.dto.PersonDtoResponse;
+import com.example.esercizio6.exception.ApiExceptionHandler;
+import com.example.esercizio6.exception.InvalidInputException;
+import com.example.esercizio6.exception.ResourceNotFoundException;
 import com.example.esercizio6.service.PersonService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-
+@Validated
 @RequestMapping("/api/v1/persons")
 @RestController
 public class PersonController {
@@ -27,8 +33,12 @@ public class PersonController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<String>> getNamesByChar(@RequestParam String startingLetter){
-       List<String> nameList = personService.findByNameStartingWith(startingLetter);
+    public ResponseEntity<List<String>> getNamesByChar(@RequestParam  @IsLetter(propName = "startingLetter") String startingLetter){
+        List<String> nameList;
+        nameList = personService.findByNameStartingWith(startingLetter);
+        if (nameList.isEmpty()) {
+           return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.status(HttpStatus.OK).body(nameList);
     }
 
@@ -51,8 +61,4 @@ public class PersonController {
     }
 
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
 }
